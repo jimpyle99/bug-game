@@ -1,11 +1,26 @@
-var scaleX = 101;
-var scaleY = 83.5;
-var offsetY = (0.5 * scaleY);
+var SCALE = {
+    x: 101,
+    y: 83
+};
+
+var GRID = {
+    xMin: 0,
+    xMax: 4,
+    yMin: 0,
+    yMax: 5
+};
+
+var BOUNDS = {
+    xMin: GRID.xMin,
+    xMax: GRID.xMax * SCALE.x,
+    yMin: (GRID.yMin - 0.5) * SCALE.y,
+    yMax: (GRID.yMax - 0.5) * SCALE.y
+};
 
 var Entity = function (x, y) {
     this.x = x;
     this.y = y;
-}
+};
 
 // Draw the entity on the screen, required method for game
 Entity.prototype.render = function () {
@@ -46,9 +61,9 @@ Enemy.prototype.update = function(dt) {
 // Now write your own player class
 // This class requires an update(), render() and
 // a handleInput() method.
-var Player = function (x, y) {
+var Player = function (gridX, gridY) {
     // Inheritance
-    Entity.call(this, x * scaleX, (y * scaleY) - (0.5 * scaleY));
+    Entity.call(this, gridX * SCALE.x, (gridY - 0.5) * SCALE.y);
 
     // The image/sprite for our enemies, this uses
     // a helper we've provided to easily load images
@@ -70,22 +85,22 @@ Player.prototype.handleInput = function (dir) {
 
     switch (dir) {
         case 'left':
-            newX = this.x - scaleX;
+            newX = this.x - SCALE.x;
 
-            // math.max will return the parameter that is higher so the player can't go into a negative position
-            this.x = Math.max(newX, 0);
+            // returns the parameter that is higher so the player can't go outside the map
+            this.x = Math.max(newX, BOUNDS.xMin);
             break;
         case 'up':
-            newY = this.y - scaleY;
-            this.y = Math.max(newY, -offsetY);
+            newY = this.y - SCALE.y;
+            this.y = Math.max(newY, BOUNDS.yMin);
             break;
         case 'right':
-            newX = this.x + scaleX;
-            this.x = Math.min(newX, 4 * scaleX);
+            newX = this.x + SCALE.x;
+            this.x = Math.min(newX, BOUNDS.xMax);
             break;
         case 'down':
-            newY = this.y + scaleY;
-            this.y = Math.min(newY, 5 * scaleY - offsetY);
+            newY = this.y + SCALE.y;
+            this.y = Math.min(newY, BOUNDS.yMax);
             break;
 
         default:
