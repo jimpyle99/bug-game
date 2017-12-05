@@ -10,26 +10,63 @@ const GRID = {
     yMax: 5
 };
 
-const PLAYER_OFFSET = 40;
-const BUG_OFFSET = 20;
+const PLAYER_DIMENSIONS = {
+    width: 63,
+    offsetX: 19,
+    offsetY: 25
+};
+
+const PLAYER_START = {
+    x: 2,
+    y: 5
+}
+
+const BUG_DIMENSIONS = {
+    width: SCALE.x,
+    offsetX: 0,
+    offsetY: 25
+};
 
 // Speeds are in blocks per second
 const BUG_MIN_SPEED = 1;
-const BUG_MAX_SPEED = 4;
+const BUG_MAX_SPEED = 3;
 
-const Entity = function (x, y, offsetY) {
+// Draw collision boxes
+DRAW_DEBUG = true;
+
+const Entity = function (x, y, dimensions) {
     this.x = x;
     this.y = y;
-    this.offsetY = offsetY;
+    this.dimensions = dimensions;
 };
 
 // Draw the entity on the screen, required method for game
 Entity.prototype.render = function () {
     // Scale x and y from grid coordinates to pixels
     const pixelX = this.x * SCALE.x;
-    const pixelY = this.y * SCALE.y - this.offsetY;
-    ctx.drawImage(Resources.get(this.sprite), pixelX, pixelY);
+    const pixelY = this.y * SCALE.y;
+    ctx.drawImage(Resources.get(this.sprite), pixelX, pixelY - this.dimensions.offsetY);
+
+    if (!DRAW_DEBUG) {
+        return;
+    }
+
+    ctx.strokeStyle = '#ff00ff';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(this.left, pixelY + 50, this.dimensions.width, SCALE.y);
 };
+
+// Entity collision dimensions
+Object.defineProperty(Entity.prototype, 'left', {
+    get: function () {
+        return this.x * SCALE.x + this.dimensions.offsetX;
+    }
+});
+Object.defineProperty(Entity.prototype, 'right', {
+    get: function () {
+        return this.left + this.dimensions.width;
+    }
+});
 
 // Enemies our player must avoid
 const Enemy = function () {
@@ -41,7 +78,7 @@ const Enemy = function () {
     const startY = Math.floor(Math.random() * 3) + 1;
 
     // Set starting position and inherit Entity members
-    Entity.call(this, startX, startY, BUG_OFFSET);
+    Entity.call(this, startX, startY, BUG_DIMENSIONS);
 
     this.sprite = 'images/enemy-bug.png';
     this.speed = BUG_MIN_SPEED + Math.random() * BUG_MAX_SPEED;
@@ -69,10 +106,10 @@ Enemy.prototype.update = function(dt) {
     }
 };
 
-const Player = function (x, y) {
+const Player = function () {
 
     // Set starting position and inherit Entity members
-    Entity.call(this, x, y, PLAYER_OFFSET);
+    Entity.call(this, PLAYER_START.x, PLAYER_START.y, PLAYER_DIMENSIONS);
 
     // The image/sprite for our enemies, this uses
     // a helper we've provided to easily load images
@@ -90,9 +127,13 @@ Player.prototype.constructor = Player;
 Player.prototype.update = function () {
 
     // Only check Enemies that are on the same row
-    if (player.y < 0) {
-        console.log(player.y)
-;    }
+    allEnemies
+        .filter(enemy => enemy.y === player.y)
+        .forEach(enemy => {
+            if (enemy.right >= player.left && enemy.left <= player.right) {
+                console.log('collision!');
+            }
+        })
 };
 
 Player.prototype.handleInput = function (dir) {
@@ -122,7 +163,7 @@ Player.prototype.handleInput = function (dir) {
 // Place all enemy objects in an array called allEnemies
 // Place the player object in a variable called player
 window.allEnemies = [new Enemy(), new Enemy(), new Enemy()];
-window.player = new Player(2, 5);
+window.player = new Player();
 
 // This listens for key presses and sends the keys to your
 // Player.handleInput() method. You don't need to modify this.
