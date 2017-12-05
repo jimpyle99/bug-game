@@ -1,58 +1,48 @@
-var SCALE = {
+const SCALE = {
     x: 101,
     y: 83
 };
 
-var GRID = {
+const GRID = {
     xMin: 0,
     xMax: 4,
     yMin: 0,
     yMax: 5
 };
 
-var BOUNDS = {
-    xMin: GRID.xMin,
-    xMax: GRID.xMax * SCALE.x,
-    yMin: (GRID.yMin - 0.5) * SCALE.y,
-    yMax: (GRID.yMax - 0.5) * SCALE.y
-};
-
-// The bugs aren't the same height as the other objects
-var BUG_OFFSET = 20;
+const PLAYER_OFFSET = 40;
+const BUG_OFFSET = 20;
 
 // Speeds are in blocks per second
-var BUG_MIN_SPEED = 1 * SCALE.x;
-var BUG_MAX_SPEED = 3 * SCALE.x;
+const BUG_MIN_SPEED = 1;
+const BUG_MAX_SPEED = 4;
 
-var Entity = function (x, y) {
+const Entity = function (x, y, offsetY) {
     this.x = x;
     this.y = y;
+    this.offsetY = offsetY;
 };
 
 // Draw the entity on the screen, required method for game
 Entity.prototype.render = function () {
-    ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
+    // Scale x and y from grid coordinates to pixels
+    const pixelX = this.x * SCALE.x;
+    const pixelY = this.y * SCALE.y - this.offsetY;
+    ctx.drawImage(Resources.get(this.sprite), pixelX, pixelY);
 };
 
 // Enemies our player must avoid
-var Enemy = function () {
+const Enemy = function () {
 
     // Start Enemy off-screen, horizontally
-    var startX = -SCALE.x;
+    const startX = -1;
 
     // Start Enemy in random stone block row
-    var startY = 1;
-    startY += Math.floor(Math.random() * 3);
-    startY = startY * SCALE.y - BUG_OFFSET;
+    const startY = Math.floor(Math.random() * 3) + 1;
 
     // Set starting position and inherit Entity members
-    Entity.call(this, startX, startY);
+    Entity.call(this, startX, startY, BUG_OFFSET);
 
-    // Variables applied to each of our instances go here,
-    // we've provided one for you to get started
-
-    // The image/sprite for our enemies, this uses
-    // a helper we've provided to easily load images
     this.sprite = 'images/enemy-bug.png';
     this.speed = BUG_MIN_SPEED + Math.random() * BUG_MAX_SPEED;
 };
@@ -72,26 +62,17 @@ Enemy.prototype.update = function(dt) {
     this.x += this.speed * dt;
 
     // Destroy this bug since he's off-screen and create a new one
-    if (this.x > BOUNDS.xMax + SCALE.x) {
+    if (this.x > GRID.xMax + 1) {
         let index = allEnemies.indexOf(this);
         allEnemies.splice(index, 1);
         allEnemies.push(new Enemy());
     }
 };
 
-// Don't need this. Inherited from Entity
-// Draw the enemy on the screen, required method for game
-// Enemy.prototype.render = function() {
-//     ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
-// };
-
-// Now write your own player class
-// This class requires an update(), render() and
-// a handleInput() method.
-var Player = function (gridX, gridY) {
+const Player = function (x, y) {
 
     // Set starting position and inherit Entity members
-    Entity.call(this, gridX * SCALE.x, (gridY - 0.5) * SCALE.y);
+    Entity.call(this, x, y, PLAYER_OFFSET);
 
     // The image/sprite for our enemies, this uses
     // a helper we've provided to easily load images
@@ -104,32 +85,35 @@ Player.prototype = Object.create(Entity.prototype);
 // Change constructor for proper identification
 Player.prototype.constructor = Player;
 
+// Player warps from cell to cell so the 'dt' value is not needed
+// Instead, check for player collisions with other Entities
 Player.prototype.update = function () {
+
+    // Only check Enemies that are on the same row
+    if (player.y < 0) {
+        console.log(player.y)
+;    }
 };
 
 Player.prototype.handleInput = function (dir) {
-    var newX;
-    var newY;
-
     switch (dir) {
         case 'left':
-            // get the new player location
-            newX = this.x - SCALE.x;
-
+            // set the new player location
+            this.x -= 1;
             // ensure the player can't go outside the map
-            this.x = Math.max(newX, BOUNDS.xMin);
+            this.x = Math.max(this.x, GRID.xMin);
             break;
         case 'up':
-            newY = this.y - SCALE.y;
-            this.y = Math.max(newY, BOUNDS.yMin);
+            this.y -= 1;
+            this.y = Math.max(this.y, GRID.yMin);
             break;
         case 'right':
-            newX = this.x + SCALE.x;
-            this.x = Math.min(newX, BOUNDS.xMax);
+            this.x += 1;
+            this.x = Math.min(this.x, GRID.xMax);
             break;
         case 'down':
-            newY = this.y + SCALE.y;
-            this.y = Math.min(newY, BOUNDS.yMax);
+            this.y += 1;
+            this.y = Math.min(this.y, GRID.yMax);
             break;
     }
 };
@@ -143,7 +127,7 @@ window.player = new Player(2, 5);
 // This listens for key presses and sends the keys to your
 // Player.handleInput() method. You don't need to modify this.
 document.addEventListener('keyup', function(e) {
-    var allowedKeys = {
+    const allowedKeys = {
         37: 'left',
         38: 'up',
         39: 'right',
