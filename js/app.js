@@ -144,6 +144,8 @@ Player.prototype.update = function () {
         alert("You Win!");
         window.other.shift();
         player = new Player();
+        window.selector.x = 0;
+        window.selector.y = 7;
     }
 
     // Only check Enemies that are on the same row
@@ -154,12 +156,14 @@ Player.prototype.update = function () {
                 // Reset player
                 player.x = 2;
                 player.y = 5;
+                alert("You were captured by the bug.  You must never lose hope and try again.")
             }
         })
 
     if (player.y === 0) {
         player.x = 2;
         player.y = 5;
+        alert("You fell in the water.  It took a while to swim back around but you never give up.")
     }
 
     if (player.x === star.x && player.y === star.y) {
