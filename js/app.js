@@ -27,12 +27,18 @@ const BUG_DIMENSIONS = {
     offsetY: 25
 };
 
+const CHAR_LIST = ['images/char-boy.png',
+    'images/char-cat-girl.png',
+    'images/char-horn-girl.png',
+    'images/char-pink-girl.png',
+    'images/char-princess-girl.png'];
+
 // Speeds are in blocks per second
 const BUG_MIN_SPEED = 1;
 const BUG_MAX_SPEED = 3;
 
 // Draw collision boxes
-DRAW_DEBUG = true;
+DRAW_DEBUG = false;
 
 const Entity = function (x, y, dimensions) {
     this.x = x;
@@ -106,14 +112,22 @@ Enemy.prototype.update = function(dt) {
     }
 };
 
+
 const Player = function () {
+    window.star = new Star();
+
+    other.unshift(window.star);
+
+    this.haswon = false;
 
     // Set starting position and inherit Entity members
     Entity.call(this, PLAYER_START.x, PLAYER_START.y, PLAYER_DIMENSIONS);
 
+    this.charIndex = 0
+
     // The image/sprite for our enemies, this uses
     // a helper we've provided to easily load images
-    this.sprite = 'images/char-boy.png';
+    this.sprite = CHAR_LIST[this.charIndex];
 };
 
 // Clone Entity prototype to share methods
@@ -126,14 +140,32 @@ Player.prototype.constructor = Player;
 // Instead, check for player collisions with other Entities
 Player.prototype.update = function () {
 
+    if (player.haswon) {
+        alert("You Win!");
+        window.other.shift();
+        player = new Player();
+    }
+
     // Only check Enemies that are on the same row
     allEnemies
         .filter(enemy => enemy.y === player.y)
         .forEach(enemy => {
             if (enemy.right >= player.left && enemy.left <= player.right) {
-                console.log('collision!');
+                // Reset player
+                player.x = 2;
+                player.y = 5;
             }
         })
+
+    if (player.y === 0) {
+        player.x = 2;
+        player.y = 5;
+    }
+
+    if (player.x === star.x && player.y === star.y) {
+        player.haswon = true;
+    }
+
 };
 
 Player.prototype.handleInput = function (dir) {
@@ -156,13 +188,88 @@ Player.prototype.handleInput = function (dir) {
             this.y += 1;
             this.y = Math.min(this.y, GRID.yMax);
             break;
+        case 'comma':
+            this.charIndex -= 1;
+            this.charIndex = Math.max(0, this.charIndex);
+            this.sprite = CHAR_LIST[this.charIndex];
+            window.selector.x = this.charIndex;
+            break;
+        case 'period':
+            this.charIndex += 1;
+            this.charIndex = Math.min(4, this.charIndex)
+            this.sprite = CHAR_LIST[this.charIndex];
+            window.selector.x = this.charIndex;
+            break;
     }
 };
 
+const Statue = function (charIndex) {
+
+    // Set starting position and inherit Entity members
+    Entity.call(this, charIndex, 7, PLAYER_DIMENSIONS);
+
+    // The image/sprite for our enemies, this uses
+    // a helper we've provided to easily load images
+    this.sprite = CHAR_LIST[charIndex];
+};
+
+// Clone Entity prototype to share methods
+Statue.prototype = Object.create(Entity.prototype);
+
+// Change constructor for proper identification
+Statue.prototype.constructor = Statue;
+
+// howdy
+const Selector = function () {
+    this.x = 0;
+    this.y = 7;
+    // Set starting position and inherit Entity members
+    Entity.call(this, this.x, this.y, PLAYER_DIMENSIONS);
+
+    // The image/sprite for our enemies, this uses
+    // a helper we've provided to easily load images
+    this.sprite = 'images/Selector.png';
+};
+
+// Clone Entity prototype to share methods
+Selector.prototype = Object.create(Entity.prototype);
+
+// Change constructor for proper identification
+Selector.prototype.constructor = Selector;
+
+const Star = function () {
+    this.x = Math.floor(Math.random() * 5);
+    this.y = 1;
+    // Set starting position and inherit Entity members
+    Entity.call(this, this.x, this.y, PLAYER_DIMENSIONS);
+
+    // The image/sprite for our enemies, this uses
+    // a helper we've provided to easily load images
+    this.sprite = 'images/Star.png';
+};
+
+// Clone Entity prototype to share methods
+Star.prototype = Object.create(Entity.prototype);
+
+// Change constructor for proper identification
+Star.prototype.constructor = Star;
 // Now instantiate your objects.
 // Place all enemy objects in an array called allEnemies
 // Place the player object in a variable called player
 window.allEnemies = [new Enemy(), new Enemy(), new Enemy()];
+
+window.selector = new Selector();
+
+window.other = [
+    window.selector,
+    new Statue(0),
+    new Statue(1),
+    new Statue(2),
+    new Statue(3),
+    new Statue(4)
+];
+
+
 window.player = new Player();
 
 // This listens for key presses and sends the keys to your
@@ -172,7 +279,9 @@ document.addEventListener('keyup', function(e) {
         37: 'left',
         38: 'up',
         39: 'right',
-        40: 'down'
+        40: 'down',
+        188: 'comma',
+        190: 'period'
     };
 
     player.handleInput(allowedKeys[e.keyCode]);
