@@ -11,19 +11,20 @@ const GRID = {
 };
 
 const PLAYER_DIMENSIONS = {
-    width: 63,
-    offsetX: 19,
-    offsetY: 25
+    width: 55,
+    offsetX: 23,
+    offsetY: 23
 };
 
 const PLAYER_START = {
     x: 2,
     y: 5
-}
+};
 
 const BUG_DIMENSIONS = {
-    width: SCALE.x,
-    offsetX: 0,
+    //width: SCALE.x,
+    width: 92,
+    offsetX: 3,
     offsetY: 25
 };
 
@@ -123,7 +124,7 @@ const Player = function () {
     // Set starting position and inherit Entity members
     Entity.call(this, PLAYER_START.x, PLAYER_START.y, PLAYER_DIMENSIONS);
 
-    this.charIndex = 0
+    this.charIndex = 0;
 
     // The image/sprite for our enemies, this uses
     // a helper we've provided to easily load images
@@ -140,7 +141,7 @@ Player.prototype.constructor = Player;
 // Instead, check for player collisions with other Entities
 Player.prototype.update = function () {
 
-    if (player.haswon) {
+    if (this.haswon) {
         alert("You Win!");
         window.other.shift();
         player = new Player();
@@ -156,14 +157,14 @@ Player.prototype.update = function () {
                 // Reset player
                 player.x = 2;
                 player.y = 5;
-                alert("You were captured by the bug.  You must never lose hope and try again.")
+                alert("You were captured by the bug.  You must never lose hope and try again.");
             }
-        })
+        });
 
     if (player.y === 0) {
         player.x = 2;
         player.y = 5;
-        alert("You fell in the water.  It took a while to swim back around but you never give up.")
+        alert("You fell in the water.  It took a while to swim back around but you never give up.");
     }
 
     if (player.x === star.x && player.y === star.y) {
@@ -200,7 +201,7 @@ Player.prototype.handleInput = function (dir) {
             break;
         case 'period':
             this.charIndex += 1;
-            this.charIndex = Math.min(4, this.charIndex)
+            this.charIndex = Math.min(4, this.charIndex);
             this.sprite = CHAR_LIST[this.charIndex];
             window.selector.x = this.charIndex;
             break;
