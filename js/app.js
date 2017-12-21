@@ -47,6 +47,16 @@ const Entity = function (x, y, dimensions) {
     this.dimensions = dimensions;
 };
 
+// creates a new game
+const resetGame = function() {
+    //clears the canvas or board
+    window.other.shift();
+    // creates new player
+    player = new Player();
+    // places the selector in the starting position
+    window.selector.x = 0;
+    window.selector.y = 7;
+}
 // Draw the entity on the screen, required method for game
 Entity.prototype.render = function () {
     // Scale x and y from grid coordinates to pixels
@@ -143,32 +153,28 @@ Player.prototype.update = function () {
 
     if (this.haswon) {
         alert("You Win!");
-        window.other.shift();
-        player = new Player();
-        window.selector.x = 0;
-        window.selector.y = 7;
+        resetGame();
     }
 
     // Only check Enemies that are on the same row
     allEnemies
-        .filter(enemy => enemy.y === player.y)
+        .filter(enemy => enemy.y === this.y)
         .forEach(enemy => {
-            if (enemy.right >= player.left && enemy.left <= player.right) {
-                // Reset player
-                player.x = 2;
-                player.y = 5;
+            if (enemy.right >= this.left && enemy.left <= this.right) {
+                // Reset game
+                resetGame();
                 alert("You were captured by the bug.  You must never lose hope and try again.");
             }
         });
 
-    if (player.y === 0) {
-        player.x = 2;
-        player.y = 5;
+    if (this.y === 0) {
+        this.x = 2;
+        this.y = 5;
         alert("You fell in the water.  It took a while to swim back around but you never give up.");
     }
 
-    if (player.x === star.x && player.y === star.y) {
-        player.haswon = true;
+    if (this.x === star.x && this.y === star.y) {
+        this.haswon = true;
     }
 
 };

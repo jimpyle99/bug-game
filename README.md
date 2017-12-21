@@ -28,7 +28,9 @@ Game engine is located in:
 
 > bug-game\js\engine.js
 
+To play the game open up the index.html file in a modern web browser that supports ES2015 or ECMAScript 6 ...
 
+>bug-game\js\index.html
 
 
 ```
@@ -40,6 +42,7 @@ Game engine is located in:
 Change character left  ,
 Change character right .
 Arrow keys move character.
+
 
 ## Acknowledgments
 
